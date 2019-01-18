@@ -160,7 +160,6 @@
             '<td class="Key">' +
               '<a href="<% print(encodeURIComponent(Key)) %>"><%- Key %></a> ' + 
               '<a class="download text-black-50 font-small d-none d-sm-inline" href="<% print(encodeURIComponent(Key)) %>.download">download</a> ' +
-              '<a class="torrent text-black-50 font-small d-none d-sm-inline" href="<% print(encodeURIComponent(Key)) %>.torrent">torrent</a> ' +
               (LANGUAGES.hasOwnProperty((filename.replace(/.+(?=\.)|.+/, ''))) ? '<a class="view text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.src">view</a>' : '') +
             '</td>' +
             '<td class="Size w-25 align-middle text-right text-black-50 font-small readable" onclick="toggleSize(this, event);" data-Size="<%- Size %>">' +
@@ -198,6 +197,19 @@
     // endmost URI segment
     var tail = window.location.pathname.split('/').pop();
 
+    // *.download
+    if (tail.match(/\.download$/)) {
+
+      // generate and redirect to pre-signed URL
+      window.location.href = S3.getSignedUrl('getObject', {
+        Bucket: CONFIGURATION.S3Bucket,
+        Key: window.location.pathname.replace(/^\/|\.download$/g, '')
+      });
+
+      return;
+
+    }
+
     // *.src
     if (tail.match(/\.src$/)) {
 
@@ -228,37 +240,6 @@
         // highlight source
         Prism.highlightElement(_.first($('pre code')));
 
-      });
-
-      return;
-
-    }
-
-    // *.download
-    if (tail.match(/\.download$/)) {
-
-      // generate and redirect to pre-signed URL
-      window.location.href = S3.getSignedUrl('getObject', {
-        Bucket: CONFIGURATION.S3Bucket,
-        Key: window.location.pathname.replace(/^\/|\.download$/g, '')
-      });
-
-      return;
-
-    }
-
-    // *.torrent
-    if (tail.match(/\.torrent$/)) {
-
-      var Key = window.location.pathname.replace(/^\/|\.torrent$/g, '');
-
-      S3.getObjectTorrent({
-        Bucket: CONFIGURATION.S3Bucket,
-        Key: Key
-      }, function (error, data) {
-        error
-          ? RenderError(error.statusCode, error.message)
-          : download(data.Body, Key.split('/').pop(), 'application/x-bittorrent');
       });
 
       return;
