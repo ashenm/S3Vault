@@ -80,7 +80,7 @@
       FetchOwner: false,
       Prefix: prefix,
       ContinuationToken: marker,
-      EncodingType: 'url',
+      EncodingType: 'url'
     }, function (error, data) {
 
       if (error) {
@@ -158,7 +158,7 @@
         DOMNodes.$index.append(_.template(
           '<tr>' +
             '<td class="Key">' +
-              '<a href="<% print(encodeURIComponent(Key)) %>"><%- Key %></a> ' + 
+              '<a href="<% print(encodeURIComponent(Key)) %>"><%- Key %></a> ' +
               '<a class="download text-black-50 font-small d-none d-sm-inline" href="<% print(encodeURIComponent(Key)) %>.download">download</a> ' +
               (LANGUAGES.hasOwnProperty((filename.replace(/.+(?=\.)|.+/, ''))) ? '<a class="view text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.src">view</a>' : '') +
             '</td>' +
@@ -182,7 +182,7 @@
 
     });
 
-  }
+  };
 
   /**
    * @function GenerateView
@@ -270,7 +270,7 @@
     // generate S3 object index
     ListS3Objects(window.location.pathname.replace(/^\//, ''));
 
-  }
+  };
 
   /**
    * @function RenderError
@@ -283,9 +283,9 @@
     $('<tr class="bg-danger text-white"></tr>')
       .html('<th class="border-0" colspan="4">' + (statusCode || '500') + ' ' + (message || 'Internal Server Error') + '</th>')
       .appendTo($('thead').empty());
-  }
+  };
 
-  /** 
+  /**
    * @function toggleLastModified
    * @summary Convert Object LastModified Representation
    * @param {Element} - DOM element
@@ -312,7 +312,7 @@
 
   };
 
-  /** 
+  /**
    * @function toggleSize
    * @summary Convert Object Size Representation
    * @param {Element} - DOM element
@@ -373,7 +373,7 @@
       return bytes + ' B';
     }
 
-  }
+  };
 
   // onDOMReady
   // initialize Cognito
@@ -403,9 +403,19 @@
         }, { region: CONFIGURATION.Region });
 
         AWS.config.credentials.get(function (error) {
-          error
-            ? RenderError()
-            : GenerateView();
+
+          if (error) {
+            RenderError();
+            return;
+          }
+
+          if (e.state) {
+            window.location.href = JSON.parse(decodeURIComponent(e.state)).redirect;
+            return;
+          }
+
+          GenerateView();
+
         });
 
       },
@@ -416,6 +426,12 @@
       }
 
     };
+
+    // preserve deeplinks during auth flow
+    AuthEngine.setState(encodeURIComponent(JSON.stringify({
+      redirect: window.location.href,
+      provision: AuthEngine.generateRandomString(AuthEngine.getCognitoConstants().STATELENGTH, AuthEngine.getCognitoConstants().STATEORIGINSTRING)
+    })));
 
     AuthEngine.parseCognitoWebResponse(window.location.href);
     AuthEngine.getSession();
