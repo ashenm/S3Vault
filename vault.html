@@ -59,6 +59,23 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js" integrity="sha256-VBLiveTKyUZMEzJd6z2mhfxIqz3ZATCuVMawPZGzIfA=" crossorigin="anonymous"></script>
   <script src="/dist/amazon-cognito-auth.min.js"></script>
   <script src="/dist/aws-sdk-2.384.0.min.js"></script>
+  <script src="/dist/CookieStorage.min.js"></script>
+
+  <!-- pollyfill sessionStorage -->
+  <script type="text/javascript">
+
+    (function () {
+
+      if (typeof sessionStorage !== 'undefined') {
+        return;
+      }
+
+      sessionStorage = new CookieStorage();
+
+    })();
+
+  </script>
+
   <script src="/vault.min.js"></script>
 
 </head>

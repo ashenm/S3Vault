@@ -49,7 +49,7 @@
     // Cognito specifics
     CongnitoClientID: '4rv5jq1bup22slv151jc730m9k',
     CongnitoUserPoolId: 'us-east-1_lqhwxxJZ6',
-    CongnitoTokenScope: ['phone', 'email', 'openid'],
+    CongnitoTokenScope: [ 'phone', 'email', 'openid' ],
     CongnitoRedirectUriSignIn: window.location.origin,
     CongnitoRedirectUriSignOut: window.location.origin,
     CongnitoAdvancedSecurityDataCollectionFlag: false,
@@ -382,6 +382,10 @@
     // associate requisite DOM references
     DOMNodes.$index = $('tbody');
 
+    var unity = sessionStorage.getItem('unity');
+    var memento = sessionStorage.getItem('memento');
+    var exposition = sessionStorage.getItem('exposition');
+
     var AuthEngine = new AmazonCognitoIdentity.CognitoAuth({
       ClientId: CONFIGURATION.CongnitoClientID,
       AppWebDomain: CONFIGURATION.AppWebDomain,
@@ -397,10 +401,22 @@
 
       onSuccess: function (e) {
 
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: CONFIGURATION.CognitoIdentityPoolId,
-          Logins: { [ 'cognito-idp.' +  CONFIGURATION.Region + '.amazonaws.com/' + CONFIGURATION.CongnitoUserPoolId ]: e.getIdToken().getJwtToken() },
-        }, { region: CONFIGURATION.Region });
+        if (unity && memento && exposition) {
+
+          AWS.config.credentials = new AWS.Credentials({
+            accessKeyId: unity,
+            secretAccessKey: exposition,
+            sessionToken: memento
+          });
+
+        } else {
+
+          AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: CONFIGURATION.CognitoIdentityPoolId,
+            Logins: { [ 'cognito-idp.' +  CONFIGURATION.Region + '.amazonaws.com/' + CONFIGURATION.CongnitoUserPoolId ]: e.getIdToken().getJwtToken() },
+          }, { region: CONFIGURATION.Region });
+
+        }
 
         AWS.config.credentials.get(function (error) {
 
@@ -415,6 +431,9 @@
           }
 
           GenerateView();
+          sessionStorage.setItem('unity', AWS.config.credentials.accessKeyId);
+          sessionStorage.setItem('memento', AWS.config.credentials.sessionToken);
+          sessionStorage.setItem('exposition', AWS.config.credentials.secretAccessKey);
 
         });
 
