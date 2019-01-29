@@ -15,7 +15,6 @@ usage() {
 cat <<USAGE
 
 Usage: $SELF [OPTIONS] ACTION
-Run a workspace in a new container
 
 Options:
       --bucket NAME         S3 Bucket (default 'vault.ashenm.ml')
