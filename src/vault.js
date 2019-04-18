@@ -9,7 +9,13 @@
 
 (function () {
 
-  "use strict";
+  /* global _ */
+  /* global AmazonCognitoIdentity */
+  /* global AWS */
+  /* global moment */
+  /* global Prism */
+
+  'use strict';
 
   // S3 SDK
   var S3;
@@ -330,7 +336,7 @@
         .addClass('raw');
     } else {
       $this
-        .text(bytesToSize($this.attr('data-Size')))
+        .text(window.bytesToSize($this.attr('data-Size')))
         .removeClass('raw')
         .addClass('readable');
     }
@@ -341,9 +347,7 @@
 
   /**
    * Convert number of bytes into human readable format.
-   *
    * @see http://codeaid.net/javascript/convert-size-in-bytes-to-human-readable-format-(javascript)
-   *
    * @param integer bytes Number of bytes to convert
    * @param integer precision Number of digits after the decimal separator
    * @return string
@@ -413,7 +417,7 @@
 
           AWS.config.credentials = new AWS.CognitoIdentityCredentials({
             IdentityPoolId: CONFIGURATION.CognitoIdentityPoolId,
-            Logins: { [ 'cognito-idp.' +  CONFIGURATION.Region + '.amazonaws.com/' + CONFIGURATION.CongnitoUserPoolId ]: e.getIdToken().getJwtToken() },
+            Logins: { [ 'cognito-idp.' + CONFIGURATION.Region + '.amazonaws.com/' + CONFIGURATION.CongnitoUserPoolId ]: e.getIdToken().getJwtToken() }
           }, { region: CONFIGURATION.Region });
 
         }
@@ -441,7 +445,6 @@
 
       onFailure: function (e) {
         RenderError();
-        return;
       }
 
     };
@@ -454,8 +457,6 @@
 
     AuthEngine.parseCognitoWebResponse(window.location.href);
     AuthEngine.getSession();
-
-    return;
 
   });
 

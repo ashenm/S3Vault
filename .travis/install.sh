@@ -10,5 +10,8 @@ curl --silent --header "Authorization: token $GITHUB_TOKEN" \
   sudo xargs curl --silent --location --output /usr/local/bin/jq && \
   sudo chmod 755 /usr/local/bin/jq
 
+# eslint
+npm install --global eslint
+
 # AWS cli
 pip install --user awscli

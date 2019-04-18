@@ -1,14 +1,18 @@
-sudo:
-  required
+dist:
+  xenial
 
 language:
-  minimal
+  node_js
+
+node_js:
+  - lts/*
 
 install:
   - ./.travis/install.sh
 
 before_script:
   - ./.travis/verify.sh
+  - ./.travis/lint.sh
 
 script:
   - ./.travis/build.sh
