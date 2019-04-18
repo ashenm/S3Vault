@@ -10,7 +10,7 @@
 
 (function () {
 
-  var CookieStorage = function (path, maxAge, samesite) {
+  window.CookieStorage = function (path, maxAge, samesite) {
 
     return Object.defineProperties({}, {
 

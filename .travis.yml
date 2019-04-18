@@ -1,14 +1,12 @@
-sudo:
-  required
-
 language:
-  minimal
+  node_js
 
 install:
   - ./.travis/install.sh
 
 before_script:
   - ./.travis/verify.sh
+  - ./.travis/lint.sh
 
 script:
   - ./.travis/build.sh
