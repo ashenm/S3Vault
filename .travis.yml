@@ -4,6 +4,9 @@ dist:
 language:
   node_js
 
+node_js:
+  - lts/*
+
 install:
   - ./.travis/install.sh
 
