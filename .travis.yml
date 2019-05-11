@@ -21,12 +21,13 @@ before_deploy:
 
 deploy:
   provider: pages
+  local_dir: dist
   skip_cleanup: true
   github_token: $GITHUB_TOKEN
-  local_dir: dist
+  fqdn: vault.ashenm.ml
 
 after_deploy:
-  make deploy
+  make purge
 
 notifications:
   slack:
