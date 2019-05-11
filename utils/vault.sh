@@ -85,7 +85,7 @@ minify () {
 
   # extract JavaScript complied source
   jq --raw-output '.compiledCode' "/tmp/build.js" \
-    > "$VAULT_SCRIPT.min.js" && \
+    > "dist/$VAULT_SCRIPT.min.js" && \
   echo "${ANSI_GREEN}SUCCESS Minifying JavaScript resources${ANSI_RESET}"
 
   # minify html
@@ -106,7 +106,7 @@ minify () {
     --sort-attributes \
     --sort-class-name \
     --use-short-doctype \
-    --output vault.html \
+    --output "dist/vault.html" \
     "src/vault.html" && \
   echo "${ANSI_GREEN}SUCCESS Minifying HTML resources${ANSI_RESET}"
 
@@ -125,21 +125,11 @@ deploy () {
   test "$VAULT_COMPILE" || \
     minify
 
-  # upload S3 artifacts
-  test "$VAULT_UPLOAD" || \
-    aws s3 cp --recursive \
-      --exclude "*" \
-      --storage-class "STANDARD_IA" \
-      --include "$VAULT_SCRIPT.min.js" \
-      --include "$VAULT_INDEX$VAULT_INDEX_EXT" \
-      . "s3://$VAULT_BUCKET/$VAULT_FOLDER/" \
-    1> /dev/null && echo "${ANSI_GREEN}SUCCESS Uploading artifacts to S3${ANSI_RESET}"
-
   # invalidate CloudFront caches
   test "$VAULT_DISTRIBUTION" && \
     aws cloudfront create-invalidation \
       --distribution-id "$VAULT_DISTRIBUTION" \
-      --paths "/$VAULT_INDEX$VAULT_INDEX_EXT" "/$VAULT_SCRIPT.min.js" \
+      --paths "/$VAULT_INDEX$VAULT_INDEX_EXT" \
     1> /dev/null && \
 
   # await CloudFront invalidation
@@ -171,7 +161,7 @@ deploy () {
       --header "X-Auth-Key: $CLOUDFLARE_TOKEN" \
       --header "X-Auth-Email: $CLOUDFLARE_USER" \
       --header "Content-Type: application/json" \
-      --data "{ \"files\": [ \"https://$VAULT_DOMAIN/$VAULT_INDEX$VAULT_INDEX_EXT\", \"https://$VAULT_DOMAIN/$VAULT_SCRIPT.min.js\" ] }" \
+      --data "{ \"files\": [ \"https://$VAULT_DOMAIN/$VAULT_INDEX$VAULT_INDEX_EXT\" ] }" \
       --url "https://api.cloudflare.com/client/v4/zones/$VAULT_ZONE/purge_cache" \
     && echo "${ANSI_GREEN}SUCCESS Purging CloudFlare Edge caches${ANSI_RESET}"
 

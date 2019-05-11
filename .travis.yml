@@ -20,9 +20,12 @@ before_deploy:
   make minify
 
 deploy:
-  provider: script
+  provider: pages
   skip_cleanup: true
-  script: make deploy
+  local_dir: dist
+
+after_deploy:
+  make deploy
 
 notifications:
   slack:
