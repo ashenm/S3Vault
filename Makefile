@@ -17,8 +17,8 @@ serve: $(VAULT_CSCRIPT)
 
 # deploy to production
 deploy:
-	./utils/vault.sh --no-compile --zone "$CLOUDFLARE_ZONE_ID" \
-		--distribution "$AWS_CLOUDFRONT_DISTRIBUTION" deploy
+	./utils/vault.sh --no-compile --zone "$(CLOUDFLARE_ZONE_ID)" \
+		--distribution "$(AWS_CLOUDFRONT_DISTRIBUTION)" deploy
 
 # build dev script file
 developer: src/$(VAULT_SCRIPT_TEMPLATE) config/$(VAULT_CONFIG_DEV)
