@@ -85,11 +85,30 @@ minify () {
 
   # extract JavaScript complied source
   jq --raw-output '.compiledCode' "/tmp/build.js" \
-    > "$VAULT_SCRIPT.min.js"
-
+    > "$VAULT_SCRIPT.min.js" && \
   echo "${ANSI_GREEN}SUCCESS Minifying JavaScript resources${ANSI_RESET}"
 
-  # TODO minify html
+  # minify html
+  ./node_modules/.bin/html-minifier \
+    --collapse-boolean-attributes \
+    --collapse-whitespace \
+    --decode-entities \
+    --minify-css \
+    --minify-js \
+    --remove-attribute-quotes \
+    --remove-comments \
+    --remove-empty-attributes \
+    --remove-optional-tags \
+    --remove-redundant-attributes \
+    --remove-script-type-attributes \
+    --remove-style-link-type-attributes \
+    --remove-tag-whitespace \
+    --sort-attributes \
+    --sort-class-name \
+    --use-short-doctype \
+    --output vault.html \
+    "src/vault.html" && \
+  echo "${ANSI_GREEN}SUCCESS Minifying HTML resources${ANSI_RESET}"
 
 }
 

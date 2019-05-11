@@ -11,6 +11,7 @@
 
   "dependencies": {
     "eslint": "5.x",
+    "html-minifier": "4.x",
     "nunjucks": "3.x",
     "yargs": "13.x"
   }
