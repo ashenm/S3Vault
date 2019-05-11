@@ -39,7 +39,7 @@ minify: src/$(VAULT_SCRIPT)
 
 # lint source codes
 lint:
-	eslint -c .eslintrc.json src
+	./node_modules/.bin/eslint -c .eslintrc.json src
 
 # clean build files
 clean:

@@ -10,6 +10,7 @@
   },
 
   "dependencies": {
+    "eslint": "5.x",
     "nunjucks": "3.x",
     "yargs": "13.x"
   }
