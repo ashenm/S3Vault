@@ -43,8 +43,8 @@ lint:
 
 # clean build files
 clean:
-	rm -f $(VAULT_INDEX) \
-		$(VAULT_CSCRIPT) \
+	rm -f dist/$(VAULT_INDEX) \
+		dist/$(VAULT_CSCRIPT) \
 		src/$(VAULT_SCRIPT) \
 
 # build dev dependencies
