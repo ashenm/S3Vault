@@ -47,23 +47,23 @@
   var CONFIGURATION = {
 
     // AWS resource region
-    Region: 'us-east-1',
+    Region: '{{ Region }}',
 
     // Hosted UI
-    AppWebDomain: 'auth.ashenm.ml',
+    AppWebDomain: '{{ AppWebDomain }}',
 
     // Cognito specifics
-    CongnitoClientID: '4rv5jq1bup22slv151jc730m9k',
-    CongnitoUserPoolId: 'us-east-1_lqhwxxJZ6',
-    CongnitoTokenScope: [ 'phone', 'email', 'openid' ],
-    CongnitoRedirectUriSignIn: window.location.origin,
-    CongnitoRedirectUriSignOut: window.location.origin,
-    CongnitoAdvancedSecurityDataCollectionFlag: false,
-    CognitoIdentityPoolId: 'us-east-1:f944c5ff-3930-409c-b728-f8356347acc1',
+    CongnitoClientID: '{{ CongnitoClientID }}',
+    CongnitoUserPoolId: '{{ CongnitoUserPoolId }}',
+    CongnitoTokenScope: {{ CongnitoTokenScope | stringify }},
+    CongnitoRedirectUriSignIn: {{ CongnitoRedirectUriSignIn }},
+    CongnitoRedirectUriSignOut: {{ CongnitoRedirectUriSignOut }},
+    CongnitoAdvancedSecurityDataCollectionFlag: {{ CongnitoAdvancedSecurityDataCollectionFlag }},
+    CognitoIdentityPoolId: '{{ CognitoIdentityPoolId }}',
 
     // S3 specifics
-    S3Bucket: window.location.hostname,
-    S3ObjectExcludes: [ '__public__', 'status' ]
+    S3Bucket: {{ S3Bucket }},
+    S3ObjectExcludes: {{ S3ObjectExcludes | stringify }}
 
   };
 
@@ -169,7 +169,7 @@
               (LANGUAGES.hasOwnProperty((filename.replace(/.+(?=\.)|.+/, ''))) ? '<a class="view text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.src">view</a>' : '') +
             '</td>' +
             '<td class="Size w-25 align-middle text-right text-black-50 font-small readable" onclick="toggleSize(this, event);" data-Size="<%- Size %>">' +
-              '<% print(bytesToSize(Size)) %>' +
+              '<% print(window.bytesToSize(Size)) %>' +
             '</td>' +
             '<td class="LastModified w-25 align-middle text-right text-black-50 font-small d-none d-sm-table-cell readable" onclick="toggleLastModified(this, event);" data-LastModified="<%- LastModified %>">' +
               '<% print(moment(LastModified, moment.RFC_2822).fromNow()) %>' +

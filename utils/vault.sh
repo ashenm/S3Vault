@@ -15,6 +15,7 @@ usage() {
 cat <<USAGE
 
 Usage: $SELF [OPTIONS] ACTION
+Build, test, and deploy S3Vault
 
 Options:
       --bucket NAME         S3 Bucket (default 'vault.ashenm.ml')
