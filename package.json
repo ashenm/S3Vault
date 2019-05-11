@@ -1,0 +1,18 @@
+{
+
+  "name": "S3Vault",
+  "author": "Ashen Gunaratne",
+  "homepage": "https://github.com/ashenm/S3Vault",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashenm/S3Vault.git"
+  },
+
+  "dependencies": {
+    "eslint": "5.x",
+    "nunjucks": "3.x",
+    "yargs": "13.x"
+  }
+
+}
