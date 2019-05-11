@@ -11,8 +11,5 @@ curl -sSL https://github.com/stedolan/jq/releases/latest | \
 # .eslintrc
 curl -sSLo .eslintrc.json https://gist.githubusercontent.com/ashenm/537a91f9c864d6ef6180790d9076047d/raw/eslintrc.json
 
-# awscli
-pip install --user awscli
-
 # node packages
 npm install

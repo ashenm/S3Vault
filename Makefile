@@ -11,14 +11,13 @@ VAULT_CONFIG_DEV ?= developer.json
 install:
 	./utils/install.sh
 
-# serve localy
+# serve locally
 serve: $(VAULT_CSCRIPT)
 	./utils/server.py $(PORT) $(VAULT_INDEX)
 
-# deploy to production
-deploy:
-	./utils/vault.sh --no-compile --zone "$(CLOUDFLARE_ZONE_ID)" \
-		--distribution "$(AWS_CLOUDFRONT_DISTRIBUTION)" deploy
+# purge production edge caches
+purge:
+	./utils/vault.sh --zone "$(CLOUDFLARE_ZONE_ID)" purge
 
 # build dev script file
 developer: src/$(VAULT_SCRIPT_TEMPLATE) config/$(VAULT_CONFIG_DEV)

@@ -18,22 +18,17 @@ Usage: $SELF [OPTIONS] ACTION
 Build, test, and deploy S3Vault
 
 Options:
-      --bucket NAME         S3 Bucket (default 'vault.ashenm.ml')
-      --distribution ID     CloudFront distribution ID
-      --domain DOMAIN       S3Vault domain (default <S3 Bucket Name>)
-      --folder FOLDER       S3 Folder (default '__public__')
+      --domain DOMAIN       S3Vault domain (default 'vault.ashenm.ml')
   -h, --help                Print usage
       --index FILENAME      Index document (default 'vault')
       --index-ext EXT       Index document extension (default '.html')
-      --no-compile          Skip resource minification
-      --no-upload           Skip resource S3 upload
       --script FILENAME     JavaScript file (default 'vault')
       --script-index EXT    JavaScript file extension (default '.js')
       --zone ID             CloudFlare Zone ID
 
 Action:
-  deploy                    Deploy S3Vault
   minify                    Minify resource files
+  purge                     Purge S3Vault edge caches
 
 USAGE
 
@@ -113,46 +108,14 @@ minify () {
 }
 
 #######################################
-# Build and Deploy S3Vault
+# Purge S3Vault Cloudflare edge caches
 # Arguments:
 #   None
 # Returns:
 #   None
 #######################################
-deploy () {
+purge () {
 
-  # minify resources
-  test "$VAULT_COMPILE" || \
-    minify
-
-  # invalidate CloudFront caches
-  test "$VAULT_DISTRIBUTION" && \
-    aws cloudfront create-invalidation \
-      --distribution-id "$VAULT_DISTRIBUTION" \
-      --paths "/$VAULT_INDEX$VAULT_INDEX_EXT" \
-    1> /dev/null && \
-
-  # await CloudFront invalidation
-  # TEMP until CloudFlare supports scheduled cache purging
-  while [ $VAULT_DISTRIBUTION_TIMEOUT -gt 0 ]
-  do
-
-    # interact STDOUT throughout
-    echo "${ANSI_YELLOW}INFO Invalidating CloudFront caches${ANSI_RESET}"
-
-    # sleep no more than 10m
-    # to avoid non-interaction
-    sleep 300
-
-    # decrement desired timeout
-    VAULT_DISTRIBUTION_TIMEOUT=$(( $VAULT_DISTRIBUTION_TIMEOUT - 300 ))
-
-  done
-
-  echo "${ANSI_GREEN}SUCCESS Invalidating CloudFront caches${ANSI_RESET}"
-
-  # purge CloudFlare Edge caches
-  # https://api.cloudflare.com/#zone-purge-files-by-url
   test "$VAULT_ZONE" && \
     curl --silent \
       --show-error \
@@ -175,14 +138,7 @@ VAULT_INDEX="vault"
 VAULT_SCRIPT="vault"
 VAULT_SCRIPT_EXT=".js"
 VAULT_INDEX_EXT=".html"
-VAULT_BUCKET="vault.ashenm.ml"
-VAULT_FOLDER="__public__"
-
-# S3Vault domain
-VAULT_DOMAIN="$VAULT_BUCKET"
-
-# CloudFront invalidation grace period
-VAULT_DISTRIBUTION_TIMEOUT=900
+VAULT_DOMAIN="vault.ashenm.ml"
 
 # output colors
 ANSI_GREEN="\033[32;1m"
@@ -196,16 +152,6 @@ do
 
   case "$1" in
 
-    --no-upload)
-      VAULT_UPLOAD="FALSE"
-      shift
-      ;;
-
-    --no-compile)
-      VAULT_COMPILE="FALSE"
-      shift
-      ;;
-
     --index)
       VAULT_INDEX="${2:?Invalid INDEX}"
       shift 2
@@ -216,23 +162,8 @@ do
       shift 2
       ;;
 
-    --bucket)
-      VAULT_BUCKET="${2:?Invalid BUCKET}"
-      shift 2
-      ;;
-
-    --folder)
-      VAULT_FOLDER="${2:?Invalid FOLDER}"
-      shift 2
-      ;;
-
     --domain)
       VAULT_DOMAIN="${2:?Invalid DOMAIN}"
-      shift 2
-      ;;
-
-    --distribution)
-      VAULT_DISTRIBUTION="${2:?Invalid DISTRIBUTION}"
       shift 2
       ;;
 
@@ -261,13 +192,13 @@ do
       exit 1
       ;;
 
-    deploy)
-      deploy
+    minify)
+      minify
       exit 0
       ;;
 
-    minify)
-      minify
+    purge)
+      purge
       exit 0
       ;;
 
