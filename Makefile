@@ -43,8 +43,9 @@ lint:
 
 # clean build files
 clean:
-	rm -f $(VAULT_CSCRIPT) \
-		src/$(VAULT_SCRIPT)
+	rm -f $(VAULT_INDEX) \
+		$(VAULT_CSCRIPT) \
+		src/$(VAULT_SCRIPT) \
 
 # build dev dependencies
 src/$(VAULT_SCRIPT): src/$(VAULT_SCRIPT_TEMPLATE)
