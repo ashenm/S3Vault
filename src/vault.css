@@ -1,0 +1,33 @@
+.navbar {
+  padding: .75rem;
+}
+
+.breadcrumbs {
+  font-size: 1.25rem!important;
+  font-weight: 500!important;
+}
+
+.breadcrumbs:hover {
+  color: #cdcdcd!important;
+}
+
+.font-small {
+  font-size: small!important;
+}
+
+.table {
+  word-break: break-all;
+}
+
+.raw:hover {
+  cursor: zoom-out;
+}
+
+.readable:hover {
+  cursor: zoom-in;
+}
+
+.view:hover,
+.download:hover {
+  color: #428bca;
+}

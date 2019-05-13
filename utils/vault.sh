@@ -18,6 +18,7 @@ Usage: $SELF [OPTIONS] ACTION
 Build, test, and deploy S3Vault
 
 Options:
+      --css FILE            CSS file (default 'vault.css')
       --domain DOMAIN       S3Vault domain (default 'vault.ashenm.ml')
   -h, --help                Print usage
       --index FILENAME      Index document (default 'vault')
@@ -105,6 +106,11 @@ minify () {
     "src/vault.html" && \
   echo "${ANSI_GREEN}SUCCESS Minifying HTML resources${ANSI_RESET}"
 
+  # minify CSS
+  ./node_modules/.bin/postcss \
+    --output "dist/vault.css" "src/$VAULT_CSS" && \
+  echo "${ANSI_GREEN}SUCCESS Minifying CSS resources${ANSI_RESET}"
+
 }
 
 #######################################
@@ -134,6 +140,7 @@ purge () {
 SELF="`basename "$0"`"
 
 # default configuration
+VAULT_CSS="vault.css"
 VAULT_INDEX="vault"
 VAULT_SCRIPT="vault"
 VAULT_SCRIPT_EXT=".js"
@@ -151,6 +158,11 @@ while [ $# -ne 0 ]
 do
 
   case "$1" in
+
+    --css)
+      VAULT_CSS="${2:?Invalid CSS}"
+      shift 2
+      ;;
 
     --index)
       VAULT_INDEX="${2:?Invalid INDEX}"

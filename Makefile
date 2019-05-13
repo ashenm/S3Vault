@@ -1,5 +1,6 @@
 # configuration
 PORT ?= 8080
+VAULT_CSS ?= vault.css
 VAULT_INDEX ?= vault.html
 VAULT_SCRIPT ?= vault.js
 VAULT_CSCRIPT ?= $(VAULT_SCRIPT:.js=.min.js)
@@ -42,9 +43,10 @@ lint:
 
 # clean build files
 clean:
-	rm -f dist/$(VAULT_INDEX) \
+	rm -f dist/$(VAULT_CSS) \
+		dist/$(VAULT_INDEX) \
 		dist/$(VAULT_CSCRIPT) \
-		src/$(VAULT_SCRIPT) \
+		src/$(VAULT_SCRIPT)
 
 # build dev dependencies
 src/$(VAULT_SCRIPT): src/$(VAULT_SCRIPT_TEMPLATE)
