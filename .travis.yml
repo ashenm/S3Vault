@@ -17,8 +17,7 @@ script:
   make lint
 
 before_deploy:
-  - make minify
-  - unlink dist/404.html && cp -f dist/vault.html dist/404.html # TEMP: https://github.com/travis-ci/dpl/issues/912
+  make minify
 
 deploy:
   provider: pages
