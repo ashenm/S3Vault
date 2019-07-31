@@ -9,50 +9,32 @@
 
 (function () {
 
-  /* global _ */
-  /* global AmazonCognitoIdentity */
   /* global AWS */
-  /* global moment */
-  /* global Prism */
+  /* global AmazonCognitoIdentity */
 
   'use strict';
 
-  // S3 SDK
+  /**
+   * @constant
+   * @type {object}
+   * @descrition AWS S3 SDK
+   */
   var S3;
 
-  // DOM reference
-  var DOMNodes = {};
-
-  // highlightable languages
-  var LANGUAGES = _.object([
-    '.adoc',
-    '.asc',
-    '.asciidoc',
-    '.c',
-    '.css',
-    '.h',
-    '.html',
-    '.js',
-    '.json',
-    'Makefile',
-    '.m',
-    '.php',
-    '.plist',
-    '.sql',
-    '.txt',
-    '.xml'
-  ], []);
-
-  // runtime configuration
+  /**
+   * @constant
+   * @type {object}
+   * @description Runtime Cognito configurations
+   */
   var CONFIGURATION = {
 
-    // AWS resource region
+    // aws resource region
     Region: '{{ Region }}',
 
-    // Hosted UI
+    // hosted ui
     AppWebDomain: '{{ AppWebDomain }}',
 
-    // Cognito specifics
+    // cognito specifics
     CongnitoClientID: '{{ CongnitoClientID }}',
     CongnitoUserPoolId: '{{ CongnitoUserPoolId }}',
     CongnitoTokenScope: {{ CongnitoTokenScope | stringify }},
@@ -61,336 +43,127 @@
     CongnitoAdvancedSecurityDataCollectionFlag: {{ CongnitoAdvancedSecurityDataCollectionFlag }},
     CognitoIdentityPoolId: '{{ CognitoIdentityPoolId }}',
 
-    // S3 specifics
-    S3Bucket: {{ S3Bucket }},
-    S3ObjectExcludes: {{ S3ObjectExcludes | stringify }}
-
-  };
-
-  // TEMP until moment.js adds support for RFC 2822
-  // http://momentjs.com/docs/#/parsing/special-formats/
-  moment.RFC_2822 = 'ddd, DD MMM YYYY HH:mm:ss ZZ';
-
-  /**
-   * @function ListS3Objects
-   * @summary Generates S3 Object Index
-   * @param {String} prefix - S3 object prefix
-   * @param {String} marker - S3 roll up key
-   * @description Generates a customized S3 object index
-   */
-  var ListS3Objects = function IndexS3ObjectsInBucket (prefix, marker) {
-
-    S3.listObjectsV2({
-      Bucket: CONFIGURATION.S3Bucket,
-      Delimiter: '/',
-      FetchOwner: false,
-      Prefix: prefix,
-      ContinuationToken: marker,
-      EncodingType: 'url'
-    }, function (error, data) {
-
-      if (error) {
-        RenderError(error.statusCode, error.message);
-        return;
-      }
-
-      // if URL ends with foo but foo/ exists, redirect to foo/
-      if (!window.location.pathname.match(/\/$/)
-       && !_.isUndefined(_.findWhere(data.CommonPrefixes, { Prefix: window.location.pathname.replace(/^\//, '') + '/' }))) {
-        window.location.href = window.location.href + '/';
-        return;
-      }
-
-      // if URL still ends with foo and no Contents, reveal 404
-      if (!window.location.pathname.match(/\/$/) && _.isEmpty(data.Contents)) {
-        RenderError('404', 'Not Found');
-        return;
-      }
-
-      // handle truncated data
-      if (data.IsTruncated) {
-        ListS3Objects(data.NextContinuationToken, prefix);
-      }
-
-      // render CommonPrefixes
-      _.each(data.CommonPrefixes, function (element, index, list) {
-
-        // extract folder name
-        var folder = element.Prefix.replace(/\/$/, '').split(/\//).pop();
-
-        // omit excludes
-        if (CONFIGURATION.S3ObjectExcludes.indexOf(folder) > -1) {
-          return;
-        }
-
-        // render entry
-        DOMNodes.$index.append(
-          _.template('<tr><td colspan="4"><a href="<% print(encodeURIComponent(Prefix)) %>/"><%- Prefix %>/</a></td></tr>')({ Prefix: folder })
-        );
-
-      });
-
-      // render Contents
-      _.each(data.Contents, function (element, index, list) {
-
-        // ignore Etags
-        if (element.Key.match(/\.(md5|sha1|sha256)$/)) {
-          return;
-        }
-
-        var filename = element.Key.replace(/\/$/, '').split(/\//).pop();
-
-        // omit excludes
-        if (CONFIGURATION.S3ObjectExcludes.indexOf(filename) > -1) {
-          return;
-        }
-
-        var Etag = '<td class="Etag w-25 align-middle text-right d-none d-sm-table-cell">';
-
-        if (_.findWhere(data.Contents, { Key: element.Key + '.md5' })) {
-          Etag += '<a class="text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.md5">MD5</a>';
-        }
-
-        if (_.findWhere(data.Contents, { Key: element.Key + '.sha1' })) {
-          Etag += '<a class="text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.sha1">SHA1</a>';
-        }
-
-        if (_.findWhere(data.Contents, { Key: element.Key + '.sha256' })) {
-          Etag += '<a class="text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.sha256">SHA256</a>';
-        }
-
-        Etag += '</td>';
-
-        DOMNodes.$index.append(_.template(
-          '<tr>' +
-            '<td class="Key">' +
-              '<a href="<% print(encodeURIComponent(Key)) %>"><%- Key %></a> ' +
-              '<a class="download text-black-50 font-small d-none d-sm-inline" href="<% print(encodeURIComponent(Key)) %>.download">download</a> ' +
-              (LANGUAGES.hasOwnProperty((filename.replace(/.+(?=\.)|.+/, ''))) ? '<a class="view text-black-50 font-small" href="<% print(encodeURIComponent(Key)) %>.src">view</a>' : '') +
-            '</td>' +
-            '<td class="Size w-25 align-middle text-right text-black-50 font-small readable" onclick="toggleSize(this, event);" data-Size="<%- Size %>">' +
-              '<% print(window.bytesToSize(Size)) %>' +
-            '</td>' +
-            '<td class="LastModified w-25 align-middle text-right text-black-50 font-small d-none d-sm-table-cell readable" onclick="toggleLastModified(this, event);" data-LastModified="<%- LastModified %>">' +
-              '<% print(moment(LastModified, moment.RFC_2822).fromNow()) %>' +
-            '</td>' +
-            Etag +
-          '</tr>'
-        )({
-          'Key': filename,
-          'LastModified': moment(element.LastModified, moment.ISO_8601).format(moment.RFC_2822),
-          'Size': element.Size
-        }));
-
-      });
-
-      return data;
-
-    });
+    // s3 specifics
+    S3Bucket: {{ S3Bucket }}
 
   };
 
   /**
-   * @function GenerateView
-   * @summary Generate Vault Index
-   * @description Generate corresponding index page contemplating URL path segments
+   * @constant
+   * @type {object}
+   * @description Common HTTP status code to message mapping
    */
-  var GenerateView = function GenerateIndexPage () {
+  var HTTP_STATUS = {
+    '400': 'Bad Request',
+    '402': 'Unauthorized',
+    '403': 'Forbidden',
+    '404': 'Not Found',
+    '406': 'Not Acceptable',
+    '500': 'Internal Server Error'
+  };
 
-    // initialize S3 SKD
+  /**
+   * @function initialise
+   * @description Initialise Vault viewport
+   */
+  var initialise = function () {
+
+    // initialize s3 sdk
     S3 = new AWS.S3();
 
-    // endmost URI segment
-    var tail = window.location.pathname.split('/').pop();
-
-    // *.download
-    if (tail.match(/\.download$/)) {
+    // ?download
+    if (window.location.search === '?download'
+     && window.location.pathname.slice(-1) !== '/') {
 
       // generate and redirect to pre-signed URL
       window.location.href = S3.getSignedUrl('getObject', {
         Bucket: CONFIGURATION.S3Bucket,
-        Key: window.location.pathname.replace(/^\/|\.download$/g, '')
+        Key: window.location.pathname.replace(/^\//, '')
       });
 
       return;
 
     }
 
-    // *.src
-    if (tail.match(/\.src$/)) {
-
-      var Key = window.location.pathname.replace(/^\/|\.src$/g, '');
+    // ?view
+    if (window.location.search === '?view'
+     && window.location.pathname.slice(-1) !== '/') {
 
       S3.getObject({
         Bucket: CONFIGURATION.S3Bucket,
-        Key: Key,
-        ResponseContentType: 'text/html; charset=utf-8'
-      }, function (error, data) {
-
-        if (error) {
-          RenderError(error.statusCode, error.message);
-          return;
-        }
-
-        // extract file extension
-        var extension = Key.split('.').pop();
-
-        // inject prism.js's CSS
-        $('head')
-          .prepend('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-okaidia.min.css" integrity="sha256-+8ReLFz1xaTiP3T0xcJVWrHneeFwCnJUJwvcM0L+Ufw=" crossorigin="anonymous" />')
-          .prepend('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha256-Afz2ZJtXw+OuaPX10lZHY7fN1+FuTE/KdCs+j7WZTGc=" crossorigin="anonymous" />');
-
-        // inject source
-        $('body').empty().append('<pre class="min-vh-100 rounded-0 m-0"><code class="line-numbers language-' + _.escape(extension) + '">' + _.escape(data.Body) + '</code>');
-
-        // highlight source
-        Prism.highlightElement(_.first($('pre code')));
-
+        Key: window.location.pathname.replace(/^\//, '').concat('.highlight')
+      }, function (err, data) {
+        err ? error(err.statusCode, err.message) : $('body').html(data.Body.toString('utf8')).addClass('view');
       });
+
+      $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/github.min.css" integrity="sha256-iAmWN8uaUdN6Y9FCf8srQdrx3eVVwouJ5QtEiyuTQ6A=" crossorigin="anonymous" />');
 
       return;
 
     }
 
-    // breadcrumbs
-    var ancestors = window.location.pathname.split('/').map(decodeURIComponent).slice(1, -1);
-    var $breadcrumbs = $('<nav class="navbar justify-content-start breadcrumbs bg-dark font-weight-bold" aria-label="breadcrumb"></nav>');
+    // render breadcrumbs
+    $('header').append('<nav aria-label="breadcrumb"><a href="/">' + window.location.hostname + '/</a>'
+      + window.location.pathname.replace(/^\//, '').replace(/([^/]{1,}\/{0,1})/g, '<a href="/$`$1">$1</a>') + '</nav>');
 
-    // construct root link
-    $breadcrumbs.append('<a class="breadcrumbs text-decoration-none text-white" href="/">' + window.location.hostname + '/</a>');
+    // if url still ends with foo reveal 406
+    if (window.location.pathname.slice(-1) !== '/') {
+      error('406');
+      return;
+    }
 
-    // construct breadcrumbs
-    _.each(ancestors, function (element, index, list) {
-      $breadcrumbs.append(_.template('<a class="breadcrumbs text-decoration-none text-white" href="/<%= path %>"><%- ancestor %></a>')({
-        ancestor: element + '/',
-        path: ancestors.slice(0, index + 1).map(encodeURIComponent).join('/') + '/'
-      }));
+    // render pre-generated listing
+    S3.getObject({
+      Bucket: CONFIGURATION.S3Bucket,
+      Key: window.location.pathname.replace(/^\//, '').concat('index.partial')
+    }, function (err, data) {
+      err ? error(err.statusCode, err.message) : $('main').html(data.Body.toString('utf8')).find('.readable').click(toggle);
     });
 
-    // indicate current page
-    $breadcrumbs.children(':last-child').attr('aria-current', 'page');
-
-    // render breadcrumbs
-    $('header').append($breadcrumbs);
-
-    // generate S3 object index
-    ListS3Objects(window.location.pathname.replace(/^\//, ''));
-
   };
 
   /**
-   * @function RenderError
-   * @summary Renders Error
-   * @param {Number|String} [statusCode=500] - Error code
-   * @param {String} [message=Internal Server Error] - Error message
-   * @description Display parameterized error code and message or defaults on viewport
+   * @function error
+   * @argument {string} code
+   * @argument {string} message
+   * @description Renders parameterised error code and message on viewport
    */
-  var RenderError = function renderErrorOnViewport (statusCode, message) {
-    $('<tr class="bg-danger text-white"></tr>')
-      .html('<th class="border-0" colspan="4">' + (statusCode || '500') + ' ' + (message || 'Internal Server Error') + '</th>')
-      .appendTo($('thead').empty());
+  var error = function (code, message) {
+    return $('main').text((code || '500') + ' ' + (HTTP_STATUS[code || 500] || message || '')).removeClass().addClass('error');
   };
 
   /**
-   * @function toggleLastModified
-   * @summary Convert Object LastModified Representation
-   * @param {Element} - DOM element
-   * @param {Event} - DOM event
-   * @description Toggle object last modified date between human readable and unix
+   * @function toggle
+   * @argument {event} event
+   * @description Toggles between readable and raw metadata values
    */
-  window.toggleLastModified = function toggleLastModifiedEtag (self, e) {
+  var toggle = function (event) {
 
-    var $this = $(self);
+    const $this = $(this);
+    const text = $this.text();
 
-    if ($this.hasClass('readable')) {
-      $this
-        .text(moment($this.attr('data-LastModified'), moment.RFC_2822).valueOf())
-        .removeClass('readable')
-        .addClass('raw');
-    } else {
-      $this
-        .text(moment($this.attr('data-LastModified'), moment.RFC_2822).fromNow())
-        .removeClass('raw')
-        .addClass('readable');
+    if ($this.hasClass('size')) {
+      $this._ = 'size';
+    } else if ($this.hasClass('mtime')) {
+      $this._ = 'mtime';
     }
 
-    return e;
+    $this.toggleClass('raw')
+      .toggleClass('readable')
+      .text($this.data($this._))
+      .data($this._, text);
 
   };
 
-  /**
-   * @function toggleSize
-   * @summary Convert Object Size Representation
-   * @param {Element} - DOM element
-   * @param {Event} - DOM event
-   * @description Toggle object size between human readable and bytes
-   */
-  window.toggleSize = function toggleSizeEtag (self, e) {
-
-    var $this = $(self);
-
-    if ($this.hasClass('readable')) {
-      $this
-        .text($this.attr('data-Size'))
-        .removeClass('readable')
-        .addClass('raw');
-    } else {
-      $this
-        .text(window.bytesToSize($this.attr('data-Size')))
-        .removeClass('raw')
-        .addClass('readable');
-    }
-
-    return e;
-
-  };
-
-  /**
-   * Convert number of bytes into human readable format.
-   * @see http://codeaid.net/javascript/convert-size-in-bytes-to-human-readable-format-(javascript)
-   * @param integer bytes Number of bytes to convert
-   * @param integer precision Number of digits after the decimal separator
-   * @return string
-   */
-  window.bytesToSize = function bytesToHumanReadable (bytes, precision) {
-
-    if (_.isUndefined(bytes)) {
-      return undefined;
-    }
-
-    var kilobyte = 1024;
-    var megabyte = kilobyte * 1024;
-    var gigabyte = megabyte * 1024;
-    var terabyte = gigabyte * 1024;
-
-    if ((bytes >= 0) && (bytes < kilobyte)) {
-      return bytes + ' B';
-    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-      return (bytes / kilobyte).toFixed(precision) + ' KB';
-    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-      return (bytes / megabyte).toFixed(precision) + ' MB';
-    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-      return (bytes / gigabyte).toFixed(precision) + ' GB';
-    } else if (bytes >= terabyte) {
-      return (bytes / terabyte).toFixed(precision) + ' TB';
-    } else {
-      return bytes + ' B';
-    }
-
-  };
-
-  // onDOMReady
-  // initialize Cognito
+  // ondomcontentloaded
+  // initialize auth engine
   $(function () {
-
-    // associate requisite DOM references
-    DOMNodes.$index = $('tbody');
 
     var unity = sessionStorage.getItem('unity');
     var memento = sessionStorage.getItem('memento');
     var exposition = sessionStorage.getItem('exposition');
 
-    var AuthEngine = new AmazonCognitoIdentity.CognitoAuth({
+    var cognito = new AmazonCognitoIdentity.CognitoAuth({
       ClientId: CONFIGURATION.CongnitoClientID,
       AppWebDomain: CONFIGURATION.AppWebDomain,
       TokenScopesArray: CONFIGURATION.CongnitoTokenScope,
@@ -401,7 +174,7 @@
       AdvancedSecurityDataCollectionFlag: CONFIGURATION.CongnitoAdvancedSecurityDataCollectionFlag
     });
 
-    AuthEngine.userhandler = {
+    cognito.userhandler = {
 
       onSuccess: function (e) {
 
@@ -422,42 +195,45 @@
 
         }
 
-        AWS.config.credentials.get(function (error) {
+        AWS.config.credentials.get(function (err) {
 
-          if (error) {
-            RenderError();
+          if (err) {
+            error();
             return;
           }
+
+          sessionStorage.setItem('unity', AWS.config.credentials.accessKeyId);
+          sessionStorage.setItem('memento', AWS.config.credentials.sessionToken);
+          sessionStorage.setItem('exposition', AWS.config.credentials.secretAccessKey);
 
           if (e.state) {
             window.location.href = JSON.parse(decodeURIComponent(e.state)).redirect;
             return;
           }
 
-          GenerateView();
-          sessionStorage.setItem('unity', AWS.config.credentials.accessKeyId);
-          sessionStorage.setItem('memento', AWS.config.credentials.sessionToken);
-          sessionStorage.setItem('exposition', AWS.config.credentials.secretAccessKey);
+          initialise();
 
         });
 
       },
 
       onFailure: function (e) {
-        RenderError();
+        error();
       }
 
     };
 
     // preserve deeplinks during auth flow
-    AuthEngine.setState(encodeURIComponent(JSON.stringify({
+    cognito.setState(encodeURIComponent(JSON.stringify({
       redirect: window.location.href,
-      provision: AuthEngine.generateRandomString(AuthEngine.getCognitoConstants().STATELENGTH, AuthEngine.getCognitoConstants().STATEORIGINSTRING)
+      provision: cognito.generateRandomString(cognito.getCognitoConstants().STATELENGTH, cognito.getCognitoConstants().STATEORIGINSTRING)
     })));
 
-    AuthEngine.parseCognitoWebResponse(window.location.href);
-    AuthEngine.getSession();
+    cognito.parseCognitoWebResponse(window.location.href);
+    cognito.getSession();
 
   });
 
 })();
+
+/* vim: set expandtab shiftwidth=2 syntax=javascript: */

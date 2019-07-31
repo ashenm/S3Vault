@@ -1,33 +1,109 @@
-.navbar {
-  padding: .75rem;
+a {
+  color: #007BFF;
+  text-decoration: inherit;
 }
 
-.breadcrumbs {
-  font-size: 1.25rem!important;
-  font-weight: 500!important;
+a:hover {
+  text-decoration: underline;
 }
 
-.breadcrumbs:hover {
-  color: #cdcdcd!important;
+body {
+  margin: 0;
+  line-height: 1.5;
 }
 
-.font-small {
-  font-size: small!important;
+body.view {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 0.75rem;
 }
 
-.table {
-  word-break: break-all;
+header {
+  background-color: #343A40;
+  font-family: "Segoe UI", "Roboto", "Arial";
 }
 
-.raw:hover {
-  cursor: zoom-out;
+main {
+  font-family: "Segoe UI", "Roboto", "Arial";
 }
 
-.readable:hover {
+main.error {
+  font-weight: 500;
+  background-color: #DC3545;
+  padding: 0.75rem;
+  color: #FFF;
+}
+
+pre {
+  display: table-cell;
+}
+
+pre:first-of-type {
+  user-select: none;
+  color: #CCC;
+}
+
+nav {
+  padding: 0.75rem;
+  font-size: 1.275rem;
+}
+
+nav a {
+  color: #FFF;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #AAA;
+  text-decoration: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+table td {
+  padding: 0.75rem;
+  border-top: 1px solid #DEE2E6;
+}
+
+table tr:nth-child(2n) {
+  background-color: #EEE;
+}
+
+table .key {
+  cursor: text;
+  margin-right: 0.5rem;
+}
+
+table .key:hover {
+  text-decoration: none;
+}
+
+table .size,
+table .mtime {
+  text-align: right;
+}
+
+table .view,
+table .download {
+  margin-right: 0.25rem;
+}
+
+table .size, table .mtime,
+table .view, table .download {
+  color: #CCC;
+  font-size: smaller;
+}
+
+table .readable {
   cursor: zoom-in;
 }
 
-.view:hover,
-.download:hover {
-  color: #428bca;
+table .raw {
+  cursor: zoom-out;
 }
+
+/* vim: set expandtab shiftwidth=2 syntax=css: */
