@@ -16,6 +16,8 @@
     "html-minifier": "4.x",
     "nunjucks": "3.x",
     "yargs": "13.x"
-  }
+  },
+
+  "__vim__": { "modeline": "/* vim: set expandtab shiftwidth=2 syntax=json: */" }
 
 }

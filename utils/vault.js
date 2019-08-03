@@ -47,3 +47,5 @@ fs.writeFileSync(
   yargs.argv.outFile,
   environment.render(yargs.argv.inFile, JSON.parse(fs.readFileSync(yargs.argv.config)))
 );
+
+/* vim: set expandtab shiftwidth=2 syntax=javascript: */

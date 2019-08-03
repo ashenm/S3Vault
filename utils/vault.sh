@@ -227,3 +227,4 @@ done
 # if no action invoked
 usage
 
+# vim: set expandtab shiftwidth=2 syntax=sh:
