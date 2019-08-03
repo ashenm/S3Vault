@@ -9,6 +9,7 @@ a:hover {
 
 body {
   margin: 0;
+  font-family: "Segoe UI", "Roboto", "Arial";
   line-height: 1.5;
 }
 
@@ -16,15 +17,6 @@ body.view {
   display: table;
   border-collapse: separate;
   border-spacing: 0.75rem;
-}
-
-header {
-  background-color: #343A40;
-  font-family: "Segoe UI", "Roboto", "Arial";
-}
-
-main {
-  font-family: "Segoe UI", "Roboto", "Arial";
 }
 
 main.error {
@@ -45,6 +37,7 @@ pre:first-of-type {
 
 nav {
   padding: 0.75rem;
+  background-color: #343A40;
   font-size: 1.275rem;
 }
 
