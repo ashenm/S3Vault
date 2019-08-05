@@ -49,20 +49,6 @@
   };
 
   /**
-   * @constant
-   * @type {object}
-   * @description Common HTTP status code to message mapping
-   */
-  var HTTP_STATUS = {
-    '400': 'Bad Request',
-    '402': 'Unauthorized',
-    '403': 'Forbidden',
-    '404': 'Not Found',
-    '406': 'Not Acceptable',
-    '500': 'Internal Server Error'
-  };
-
-  /**
    * @function initialise
    * @description Initialise Vault viewport
    */
@@ -108,7 +94,7 @@
 
     // if url still ends with foo reveal 406
     if (window.location.pathname.slice(-1) !== '/') {
-      error('406');
+      error('406', 'Not Acceptable');
       return;
     }
 
@@ -129,7 +115,7 @@
    * @description Renders parameterised error code and message on viewport
    */
   var error = function (code, message) {
-    return $('main').text((code || '500') + ' ' + (HTTP_STATUS[code || 500] || message || '')).removeClass().addClass('error');
+    return $('main').text((code || '500') + ' ' + (message || 'Internal Server Error')).removeClass().addClass('error');
   };
 
   /**
