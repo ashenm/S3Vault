@@ -16,6 +16,10 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
   <script src="/amazon-cognito-auth.min.js"></script>
   <script src="/aws-sdk-2.384.0.min.js"></script>
+
+  <!-- polyfill session based storage engine -->
+  <script>(function () { window.store = (new AmazonCognitoIdentity.StorageHelper()).getStorage(); })();</script>
+
   <script src="/vault.min.js"></script>
 
 </head>

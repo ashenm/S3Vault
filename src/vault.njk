@@ -159,9 +159,9 @@
   // initialize auth engine
   $(function () {
 
-    var unity = sessionStorage.getItem('unity');
-    var memento = sessionStorage.getItem('memento');
-    var exposition = sessionStorage.getItem('exposition');
+    var unity = window.store.getItem('unity');
+    var memento = window.store.getItem('memento');
+    var exposition = window.store.getItem('exposition');
 
     var cognito = new AmazonCognitoIdentity.CognitoAuth({
       ClientId: CONFIGURATION.CongnitoClientID,
@@ -202,9 +202,9 @@
             return;
           }
 
-          sessionStorage.setItem('unity', AWS.config.credentials.accessKeyId);
-          sessionStorage.setItem('memento', AWS.config.credentials.sessionToken);
-          sessionStorage.setItem('exposition', AWS.config.credentials.secretAccessKey);
+          window.store.setItem('unity', AWS.config.credentials.accessKeyId);
+          window.store.setItem('memento', AWS.config.credentials.sessionToken);
+          window.store.setItem('exposition', AWS.config.credentials.secretAccessKey);
 
           if (e.state) {
             window.location.href = JSON.parse(decodeURIComponent(e.state)).redirect;
